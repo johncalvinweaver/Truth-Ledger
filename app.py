@@ -1,1 +1,22 @@
-from flask import Flask, request, jsonify\nimport hashlib\nimport datetime\n\napp = Flask(__name__)\n\n# In-memory ledger to store claims\nledger = []\n\n@app.route('/submit_claim', methods=['POST'])\ndef submit_claim():\n    claim_data = request.json\n    claim_hash = hashlib.sha256(str(claim_data).encode()).hexdigest()\n    timestamp = datetime.datetime.now().isoformat()\n    \n    claim_entry = {\n        'claim': claim_data,\n        'hash': claim_hash,\n        'timestamp': timestamp\n    }\n    \n    ledger.append(claim_entry)\n    return jsonify({'status': 'success', 'hash': claim_hash}), 201\n\n@app.route('/query_ledger', methods=['GET'])\ndef query_ledger():\n    return jsonify(ledger), 200\n\nif __name__ == '__main__':\n    app.run(debug=True)\n
+from flask import Flask, request, jsonify
+from ledger import Ledger
+
+app = Flask(__name__)
+ledger = Ledger()
+ledger.load_ledger()
+
+@app.route('/claims', methods=['GET'])
+def get_claims():
+    return jsonify([entry.to_dict() for entry in ledger.entries])
+
+@app.route('/claims', methods=['POST'])
+def add_claim():
+    data = request.get_json()
+    claim = data.get('claim')
+    if not claim:
+        return jsonify({'error': 'Claim is required'}), 400
+    entry = ledger.add_entry(claim)
+    return jsonify(entry.to_dict()), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)
