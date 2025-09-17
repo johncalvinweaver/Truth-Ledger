@@ -1,4 +1,17 @@
+# Python cache
 __pycache__/
-*.pyc
-.env
-.DS_Store
+
+# Virtual environment
+venv/
+
+# Pytest cache
+.cache/
+
+# mypy
+.mypy_cache/
+
+# Editor files
+*.sublime-workspace
+*.sublime-project
+*.idea/
+*.vscode/
